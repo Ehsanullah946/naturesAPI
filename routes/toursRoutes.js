@@ -15,7 +15,7 @@ router
 
 router
   .route('/')
-  .get(authController.protact, tourController.getAllTours)
+  .get(authController.protect, tourController.getAllTours)
   .post(tourController.createTour);
 
 router.route('/tour-stats').get(tourController.getTourStats);
@@ -25,8 +25,8 @@ router
   .get(tourController.getTour)
   .patch(tourController.updateTour)
   .delete(
-    authController.protact,
-    authController.restrictTo('admin,lead-guid'),
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guid'),
     tourController.deleteTour,
   );
 

@@ -5,19 +5,58 @@ const app = express();
 const AppError = require('./utils/appError');
 const globalErrorController = require('./controller/errorController');
 
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const hpp = require('hpp');
+
 const tourRouter = require('./routes/toursRoutes');
 const userRouter = require('./routes/userRoutes');
 // console.log(process.env.NODE_ENV);
 
+// global middleware
+
+// set scurity http headers
+app.use(helmet());
+
+// data sanitization against sql injection
+app.use(mongoSanitize());
+
+// data sanitization against xss hacking
+app.use(xss());
+
+// preventing parameter pullotion
+
+app.use(
+  hpp({
+    whitelist: ['duration', 'ratingsAverage', 'price'],
+  }),
+);
+
+// development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-// middleware
 
-app.use(express.json());
-
+// body parser, reading data from the req.body
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(`${__dirname}/public`));
 
+//...............................................................
+// this middleware limit the amount of request that comes from on IP
+
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 100, // one houre
+  message: 'too many request from this IP please try again after a houre',
+});
+
+app.use('/api', limiter);
+
+//.......................................................................
+
+// test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
   next();
@@ -36,7 +75,6 @@ app.use((req, res, next) => {
   // const err = new Error(`we can't find ${req.originalUrl} into routh`);
   // err.status = 'fail';
   // err.statusCode = 404;
-
   next(new AppError(` can't find ${req.originalUrl} into routh`, 404));
 });
 
