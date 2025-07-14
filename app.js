@@ -13,6 +13,7 @@ const hpp = require('hpp');
 
 const tourRouter = require('./routes/toursRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/ReviewRoutes');
 // console.log(process.env.NODE_ENV);
 
 // global middleware
@@ -21,10 +22,15 @@ const userRouter = require('./routes/userRoutes');
 app.use(helmet());
 
 // data sanitization against sql injection
-app.use(mongoSanitize());
+app.use((req, res, next) => {
+  req.body && mongoSanitize.sanitize(req.body);
+  req.params && mongoSanitize.sanitize(req.params);
+  req.query && mongoSanitize.sanitize(req.query);
+  next();
+});
 
 // data sanitization against xss hacking
-app.use(xss());
+// app.use(xss());
 
 // preventing parameter pullotion
 
@@ -70,6 +76,7 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 app.use((req, res, next) => {
   // const err = new Error(`we can't find ${req.originalUrl} into routh`);

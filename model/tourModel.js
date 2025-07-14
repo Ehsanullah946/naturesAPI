@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const slugify = require('slugify');
+const User = require('./userModel');
+const Review = require('./reviewModel');
 mongoose
   .connect(process.env.DATABASE_LOCAL, {
     useNewUrlParser: true,
@@ -33,10 +35,10 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, 'A tour should have a difficulty'],
-      enum: {
-        values: ['easy', 'medium', 'difficulty'],
-        message: ['the diffic should have easy, medium and difficulty'],
-      },
+      // enum: {
+      //   values: ['easy', 'medium', 'difficulty'],
+      //   message: 'the diffic should have easy, medium and difficulty',
+      // },
     },
     ratingsAverage: {
       type: Number,
@@ -58,7 +60,8 @@ const tourSchema = new mongoose.Schema(
         validator: function (val) {
           return val < this.price;
         },
-        message: 'the priceDiscount ({VALUES}) should blow than the price',
+        message:
+          'The price discount ({VALUE}) should be below the regular price',
       },
     },
     summary: {
@@ -84,6 +87,35 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -93,6 +125,14 @@ const tourSchema = new mongoose.Schema(
 
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+// Virtual populated
+
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
 });
 
 //  Document middleware:runs before .save() and create() function
@@ -106,7 +146,22 @@ tourSchema.post('save', function (doc, next) {
   next();
 });
 
+// tourSchema.pre('save', async function (next) {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromises);
+//   next();
+// });
+
 //  middleware query
+
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    // select: -__v - changePasswordAt,
+  });
+  next();
+});
+
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
 
