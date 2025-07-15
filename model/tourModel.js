@@ -127,7 +127,7 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
-// Virtual populated
+// Virtual populated  برعکس کردن رابطه tour , review
 
 tourSchema.virtual('reviews', {
   ref: 'Review',
@@ -152,7 +152,7 @@ tourSchema.post('save', function (doc, next) {
 //   next();
 // });
 
-//  middleware query
+//  middleware query  it defines the relationship between tour and user
 
 tourSchema.pre(/^find/, function (next) {
   this.populate({

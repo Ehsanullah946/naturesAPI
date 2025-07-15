@@ -1,5 +1,6 @@
 const AppError = require('../utils/appError');
 const catchAsynch = require('../utils/catchAsynch');
+const APIFeatures = require('../utils/apiFeatures');
 
 exports.deleteOne = (Model) =>
   catchAsynch(async (req, res, next) => {
@@ -16,7 +17,7 @@ exports.deleteOne = (Model) =>
 
 exports.updateOne = (Model) =>
   catchAsynch(async (req, res, next) => {
-    const doc = await Model.findByidAndUpdate(req.params.id, req.body, {
+    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -55,5 +56,27 @@ exports.getOne = (Model, popOption) =>
       data: {
         data: doc,
       },
+    });
+  });
+
+exports.getAll = (Model) =>
+  catchAsynch(async (req, res, next) => {
+    // this part of code will finde all the reviews that belongs to the tour that specify the id in the ulr
+    let filter = {};
+    if (req.params.tourId) filter = { tour: req.params.tourId };
+    //...........................................................
+    // this line is for get all tour actully for all of them but specific for get tours with features
+    const features = new APIFeatures(Model.find(filter), req.query)
+      .Filter()
+      .sort()
+      .limitFields()
+      .pagination();
+
+    const doc = await features.query;
+    // 6. Send response
+    res.status(200).json({
+      status: 'success',
+      resutl: doc.length,
+      data: { doc },
     });
   });

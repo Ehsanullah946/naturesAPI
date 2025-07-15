@@ -1,5 +1,4 @@
 const Tour = require('../model/tourModel');
-const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsynch');
 const factory = require('./handlerFactory');
@@ -50,89 +49,90 @@ exports.aliasTopTour = (req, res, next) => {
     '/api/v1/tours?limit=5&sort=price&fields=name,price,summary,ratingsAverage,difficulty';
   next();
 };
+exports.getAllTours = factory.getAll(Tour);
+// exports.getAllTours = async (req, res) => {
+//   try {
+// 1. Basic filtering
+// const queryObj = { ...req.query };
+// const excludedFields = ['page', 'sort', 'limit', 'fields'];
+// excludedFields.forEach((el) => delete queryObj[el]);
 
-exports.getAllTours = async (req, res) => {
-  try {
-    // 1. Basic filtering
-    // const queryObj = { ...req.query };
-    // const excludedFields = ['page', 'sort', 'limit', 'fields'];
-    // excludedFields.forEach((el) => delete queryObj[el]);
+// // 2. Advanced filtering
+// //  http://localhost:3000/api/v1/tours?duration[gt]=5&difficulty=easy
+// const filter = {};
+// for (let key in queryObj) {
+//   if (key.includes('[')) {
+//     // e.g. duration[gte] => key = "duration[gte]"
+//     const parts = key.split('[');
+//     const field = parts[0]; // duration
+//     const operator = parts[1].replace(']', ''); // gte
 
-    // // 2. Advanced filtering
-    // //  http://localhost:3000/api/v1/tours?duration[gt]=5&difficulty=easy
-    // const filter = {};
-    // for (let key in queryObj) {
-    //   if (key.includes('[')) {
-    //     // e.g. duration[gte] => key = "duration[gte]"
-    //     const parts = key.split('[');
-    //     const field = parts[0]; // duration
-    //     const operator = parts[1].replace(']', ''); // gte
+//     if (!filter[field]) filter[field] = {};
+//     filter[field][`$${operator}`] = Number(queryObj[key]);
+//   } else {
+//     filter[key] = queryObj[key];
+//   }
+// }
 
-    //     if (!filter[field]) filter[field] = {};
-    //     filter[field][`$${operator}`] = Number(queryObj[key]);
-    //   } else {
-    //     filter[key] = queryObj[key];
-    //   }
-    // }
+// // 3. Build the query
+// let query = Tour.find(filter);
 
-    // // 3. Build the query
-    // let query = Tour.find(filter);
+// 4. Sorting
+//http://localhost:3000/api/v1/tours?sort=price
 
-    // 4. Sorting
-    //http://localhost:3000/api/v1/tours?sort=price
+// if (req.query.sort) {
+//   const sortBy = req.query.sort.split(',').join(' ');
+//   query = query.sort(sortBy);
+// } else {
+//   query = query.sort('-createdAt');
+// }
 
-    // if (req.query.sort) {
-    //   const sortBy = req.query.sort.split(',').join(' ');
-    //   query = query.sort(sortBy);
-    // } else {
-    //   query = query.sort('-createdAt');
-    // }
+// 5. advanced fields
+// http://localhost:3000/api/v1/tours?fields=name
 
-    // 5. advanced fields
-    // http://localhost:3000/api/v1/tours?fields=name
+// if (req.query.fields) {
+//   const fields = req.query.fields.split(',').join(' ');
+//   query = query.select(fields);
+// } else {
+//   query = query.select('-__V');
+// }
 
-    // if (req.query.fields) {
-    //   const fields = req.query.fields.split(',').join(' ');
-    //   query = query.select(fields);
-    // } else {
-    //   query = query.select('-__V');
-    // }
+// 6. pagenation
+//
 
-    // 6. pagenation
-    //
+// const page = req.query.page * 1 || 1;
+// const limit = req.query.limit * 1 || 100;
+// const skip = (page - 1) * limit;
+// query = query.skip(skip).limit(limit);
 
-    // const page = req.query.page * 1 || 1;
-    // const limit = req.query.limit * 1 || 100;
-    // const skip = (page - 1) * limit;
-    // query = query.skip(skip).limit(limit);
+// if (req.query.page) {
+//   const numTours = await Tour.countDocuments();
+//   if (skip >= numTours)
+//     throw new Error('the number of skip greather than number of thours');
+// }
+// 5. Execute the query
 
-    // if (req.query.page) {
-    //   const numTours = await Tour.countDocuments();
-    //   if (skip >= numTours)
-    //     throw new Error('the number of skip greather than number of thours');
-    // }
-    // 5. Execute the query
-    const features = new APIFeatures(Tour.find(), req.query)
-      .Filter()
-      .sort()
-      .limitFields()
-      .pagination();
+//   const features = new APIFeatures(Tour.find(), req.query)
+//     .Filter()
+//     .sort()
+//     .limitFields()
+//     .pagination();
 
-    const tours = await features.query;
+//   const tours = await features.query;
 
-    // 6. Send response
-    res.status(200).json({
-      status: 'success',
-      data: { tours },
-    });
-  } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({
-      status: 'failed',
-      message: 'Something went wrong.',
-    });
-  }
-};
+//   // 6. Send response
+//   res.status(200).json({
+//     status: 'success',
+//     data: { tours },
+//   });
+// } catch (error) {
+//   console.error('Error:', error.message);
+//   res.status(500).json({
+//     status: 'failed',
+//     message: 'Something went wrong.',
+//   });
+// }
+// };
 
 exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 

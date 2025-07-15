@@ -11,14 +11,6 @@ const filterObj = (Obj, ...allowedFields) => {
   return newObj;
 };
 
-exports.getAllUsers = catchAsynch(async (req, res, next) => {
-  const users = await User.find();
-  res.status(200).json({
-    status: 'success',
-    data: { users },
-  });
-});
-
 exports.updateMe = catchAsynch(async (req, res, next) => {
   if (req.body.password || req.body.confirmPassword) {
     return next(
@@ -53,8 +45,15 @@ exports.deleteMe = catchAsynch(async (req, res, next) => {
   });
 });
 
-exports.getUser = factory.getOne(User);
+exports.getMe = (req, res, next) => {
+  // this line of code change the req.params.id into req.user.id which is the current user that loged in
+  req.params.id = req.user.id;
+  next();
+};
 
 //Do not update password with this
 exports.updateUser = factory.updateOne(User);
+
+exports.getAllUsers = factory.getAll(User);
+exports.getUser = factory.getOne(User);
 exports.deleteUser = factory.deleteOne(User);
