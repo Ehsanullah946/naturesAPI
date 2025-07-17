@@ -162,6 +162,11 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+/// create indexes for tour model
+
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
 
