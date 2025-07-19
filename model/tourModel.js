@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 const slugify = require('slugify');
 const User = require('./userModel');
-const Review = require('./reviewModel');
 mongoose
   .connect(process.env.DATABASE_LOCAL, {
     useNewUrlParser: true,
