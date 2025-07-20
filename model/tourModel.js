@@ -166,7 +166,7 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
-tourSchema.index({ startLocation: '2dsphere' });
+tourSchema.index({ startLocation: '2dphere' });
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
@@ -182,11 +182,11 @@ tourSchema.post(/^find/, function (docs, next) {
   next();
 });
 
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  console.log(this.pipeline);
-  next();
-});
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   console.log(this.pipeline);
+//   next();
+// });
 
 const Tour = new mongoose.model('Tour', tourSchema);
 module.exports = Tour;
