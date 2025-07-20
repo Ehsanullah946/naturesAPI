@@ -10,7 +10,6 @@ exports.setTourUserIds = (req, res, next) => {
   // for example tour/32492832kdfas/reviews   and this will be merge with tour router
   if (!req.body.tour) req.body.tour = req.params.tourId;
   if (!req.body.user) req.body.user = req.user.id;
-
   next();
   ///....................................................................................
 };

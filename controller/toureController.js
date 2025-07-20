@@ -240,3 +240,27 @@ exports.getMonthlyPlane = async (req, res) => {
     });
   }
 };
+// tours-within/233/center/-43,42/unit/mi
+exports.getTourWithin = async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  if (!lat || !lng) {
+    return next(new AppError('please provide lantitute and langitue.', 400));
+  }
+
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSpere: [[lng, lat], radius] } },
+  });
+
+  console.log(distance, lat, lng);
+  res.status(200).json({
+    status: 'success',
+    result: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+};
