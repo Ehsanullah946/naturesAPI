@@ -266,6 +266,7 @@ exports.getTourWithin = async (req, res, next) => {
 };
 
 // get distance to Tour from point and use aggregate function to calculate
+
 exports.getDistance = async (req, res, next) => {
   const { latlng, unit } = req.params;
   const [lat, lng] = latlng.split(',');

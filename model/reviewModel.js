@@ -44,6 +44,7 @@ reviewSchema.pre(/^find/, function (next) {
   });
   next();
 });
+// this code calculate rating avg using statics method and now to row
 
 reviewSchema.statics.calcRatingsAverage = async function (tourId) {
   const stats = await this.aggregate([
@@ -73,7 +74,7 @@ reviewSchema.statics.calcRatingsAverage = async function (tourId) {
 };
 
 reviewSchema.post('save', function () {
-  /// this points to the current review
+  // this points to the current review
   this.constructor.calcRatingsAverage(this.tour);
 });
 
