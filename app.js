@@ -10,6 +10,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const tourRouter = require('./routes/toursRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -48,6 +49,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // body parser, reading data from the req.body
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
@@ -70,6 +72,7 @@ app.use('/api', limiter);
 // test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log(req.cookies);
   next();
 });
 

@@ -1,5 +1,6 @@
 const catchAsynch = require('../utils/catchAsynch');
 const Tour = require('../model/tourModel');
+const User = require('../model/userModel');
 const Reviews = require('../model/reviewModel');
 
 exports.getOverview = catchAsynch(async (req, res) => {
@@ -17,7 +18,12 @@ exports.getTour = catchAsynch(async (req, res) => {
     fields: 'review rating user',
   });
   res.status(200).render('tour', {
-    title: 'the forest hiker',
+    title: `${tour.name} tour`,
     tour,
   });
 });
+exports.getLoginForm = (req, res) => {
+  res.status(200).render('login', {
+    title: 'login page',
+  });
+};
