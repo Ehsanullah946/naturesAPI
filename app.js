@@ -47,6 +47,14 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; connect-src 'self' ws://localhost:*",
+  );
+  next();
+});
+
 // body parser, reading data from the req.body
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
