@@ -72,6 +72,14 @@ exports.login = catchAsynch(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedOut', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: 'successfully' });
+};
+
 exports.protect = catchAsynch(async (req, res, next) => {
   // take the token from the header
   let token;
@@ -118,33 +126,36 @@ exports.protect = catchAsynch(async (req, res, next) => {
   }
 });
 
-exports.isLogedin = catchAsynch(async (req, res, next) => {
+exports.isLogedin = async (req, res, next) => {
   if (req.cookies.jwt) {
-    // 2. Verify token
-    const decode = await promisify(jwt.verify)(
-      req.cookies.jwt,
-      process.env.JWT_SECRET,
-    );
+    try {
+      // 2. Verify token
+      const decode = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET,
+      );
 
-    // 3. Check if the user still exists
-    const currentUser = await User.findById(decode.id);
-    if (!currentUser) {
-      return next(new AppError('The user no longer exists.', 401));
+      // 3. Check if the user still exists
+      const currentUser = await User.findById(decode.id);
+      if (!currentUser) {
+        return next(new AppError('The user no longer exists.', 401));
+      }
+
+      // 4. Check if user changed password after the token was issued
+      if (currentUser.changePasswordAfter(decode.iat)) {
+        return next(new AppError('User recently changed the password', 401));
+      }
+
+      // ✅ Attach user to response locals and continue
+      res.locals.user = currentUser;
+      return next(); // ✅ only one call
+    } catch (error) {
+      return next();
     }
-
-    // 4. Check if user changed password after the token was issued
-    if (currentUser.changePasswordAfter(decode.iat)) {
-      return next(new AppError('User recently changed the password', 401));
-    }
-
-    // ✅ Attach user to response locals and continue
-    res.locals.user = currentUser;
-    return next(); // ✅ only one call
   }
-
   // ✅ Only call next() if there's no token
   return next();
-});
+};
 
 exports.restrictTo = (...role) => {
   return (req, res, next) => {

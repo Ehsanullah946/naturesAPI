@@ -26,3 +26,16 @@ export const login = async (email, password) => {
     }
   }
 };
+
+export const logout = async () => {
+  try {
+    const res = await axios({
+      method: 'GET',
+      url: 'http://localhost:3000/api/v1/users/logout',
+    });
+    if (res.data.status === 'successfully') location.reload(true);
+    showAlert('success', 'logged out successfuly');
+  } catch (error) {
+    showAlert('error', 'error logged out, please try again!');
+  }
+};
