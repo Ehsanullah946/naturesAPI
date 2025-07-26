@@ -22,27 +22,45 @@ const handleJsonwebtokenError = (err) =>
 const handleTokenExpiredError = (err) =>
   new AppError('the token is expired please loged in again', 401);
 
-const sendErrorDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
+const sendErrorDev = (err, req, res) => {
+  if (req.originalUrl.startsWith('/api')) {
+    return res.status(err.statusCode).json({
+      status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+  }
+
+  return res.status(err.statusCode).render('error', {
+    titile: 'something went worng',
+    msg: err.message,
   });
 };
 
-const sendErrorPro = (err, res) => {
-  if (err.isOperational) {
-    res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-    });
-  } else {
-    res.status(500).json({
+const sendErrorPro = (err, req, res) => {
+  if (req.originalUrl.startsWith('/api')) {
+    if (err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    }
+    return res.status(500).json({
       status: 'error',
       message: 'Something went wrong!',
     });
   }
+  if (err.isOperational) {
+    return res.status(err.statusCode).render('error', {
+      titile: 'something went worng',
+      msg: err.message,
+    });
+  }
+  return res.status(err.statusCode).render('error', {
+    titile: 'something went worng',
+    msg: 'please try again latter',
+  });
 };
 
 module.exports = (err, req, res, next) => {
@@ -52,13 +70,15 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'fail';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
+    sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === 'production') {
+    err.message = { ...err };
+    err.message = err.message;
     if (err.name === 'CastError') err = handleCastErrorDB(err);
     if (err.code === 11000) err = handleDupicateErrorDB(err);
     if (err.name === 'ValidationError') err = handleValidationErrorDB(err);
     if (err.name === 'JsonWebTokenError') err = handleJsonwebtokenError(err);
     if (err.name === 'TokenExpiredError') err = handleTokenExpiredError(err);
-    sendErrorPro(err, res);
+    sendErrorPro(err, req, res);
   }
 };

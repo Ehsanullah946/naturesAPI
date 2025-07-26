@@ -18,9 +18,8 @@ export const login = async (email, password) => {
       }, 1000);
     }
   } catch (err) {
-    alset;
-    if (err.response && err.response.data) {
-      showAlert('error', err.response.data);
+    if (err.response && err.response.data && err.response.data.message) {
+      showAlert('error', err.response.data.message);
     } else {
       console.log('Unexpected error:', err.message);
     }
